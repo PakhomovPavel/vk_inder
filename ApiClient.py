@@ -138,14 +138,3 @@ class VkApiClient:
 
 
 vk_client = VkApiClient(user_token=user_token, api_version="5.131")
-# pprint(vk_client.get_info(1))
-# pprint(vk_client.name_users(362420338))
-# pprint(vk_client.users_search(21199458,19,20,'москва', offset=8))
-# pprint(vk_client.get_info(230574022))
-# print(vk_client.get_info(23556)[0]['city']['title'])
-# print(vk_client.city_info(21199458))
-# pprint(vk_client.all_city('москва'))
-# pprint(datetime.date.today().year)
-# pprint(int(vk_client.bdate_info(1)[6:11])-data)
-# pprint(vk_client.photo_search(67933))
-# 27424
