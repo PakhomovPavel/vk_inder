@@ -7,3 +7,4 @@ user_token = ""
 https://oauth.vk.com/authorize?client_id= вашего приложения &display=page&scope=stats.offline&response_type=token&v=5.131
 """
 запуск происходит из файла main.py
+далее нужно написать боту любое сообщение
