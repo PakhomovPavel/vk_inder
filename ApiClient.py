@@ -29,7 +29,7 @@ class VkApiClient:
             return requests.get(f"{self.base_url}/method/users.get",
                                 params={**params, **self.general_params()}).json()
         except:
-            print("Проверте токен https://oauth.vk.com/authorize?client_id=51491184&display=popup&scope=stats.offline&response_type=token&v=5.131")
+            print("Проверте токен https://oauth.vk.com/authorize?client_id=вашего приложения&display=popup&scope=stats.offline&response_type=token&v=5.131")
 
     def name_users(self, user_ids):
         try:
@@ -76,7 +76,7 @@ class VkApiClient:
             return requests.get(f"{self.base_url}/method/database.getCities",
                                 params={**params, **self.general_params()}).json()['response']['items'][0]['title']
         except KeyError:
-            print('Проверте токен https://oauth.vk.com/authorize?client_id=51491184&display=popup&scope=stats.offline&response_type=token&v=5.131')
+            print('Проверте токен https://oauth.vk.com/authorize?client_id=вашего приложения&display=popup&scope=stats.offline&response_type=token&v=5.131')
 
     def users_search(self, user_ids, min_age, max_age, city, offset=0):
         if self.get_info(user_ids)[0]['sex'] == 2:
@@ -108,7 +108,7 @@ class VkApiClient:
                     search_list.append([profile_id, name, photo])
             return search_list
         except KeyError:
-            print("Проверте токен https://oauth.vk.com/authorize?client_id=51491184&display=popup&scope=stats.offline&response_type=token&v=5.131")
+            print("Проверте токен https://oauth.vk.com/authorize?client_id=вашего приложения&display=popup&scope=stats.offline&response_type=token&v=5.131")
 
     def photo_search(self, owner_id):
         params = {
@@ -137,7 +137,7 @@ class VkApiClient:
                         photo.append(f'photo{owner_id}_{values.get(key)}')
             return photo
         except KeyError:
-            print("Проверте токен https://oauth.vk.com/authorize?client_id=51491184&display=popup&scope=stats.offline&response_type=token&v=5.131")
+            print("Проверте токен https://oauth.vk.com/authorize?client_id=вашего приложения&display=popup&scope=stats.offline&response_type=token&v=5.131")
 
 
 
