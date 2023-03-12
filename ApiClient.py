@@ -29,7 +29,7 @@ class VkApiClient:
             return requests.get(f"{self.base_url}/method/users.get",
                                 params={**params, **self.general_params()}).json()
         except:
-            print("Проверте токен https://oauth.vk.com/authorize?client_id=вашего приложения&display=popup&scope=stats.offline&response_type=token&v=5.131")
+            print("Проверте токен https://oauth.vk.com/authorize?client_id=вашегоприложения&display=popup&scope=stats.offline&response_type=token&v=5.131")
 
     def name_users(self, user_ids):
         try:
@@ -44,7 +44,7 @@ class VkApiClient:
             bdate = self.get_info(user_ids)['response'][0]['bdate']
             return bdate
         except:
-            return 'неудалось определить возраст'
+            print('неудалось определить возраст')
 
     def sex_info(self, user_ids):
         try:
@@ -76,10 +76,10 @@ class VkApiClient:
             return requests.get(f"{self.base_url}/method/database.getCities",
                                 params={**params, **self.general_params()}).json()['response']['items'][0]['title']
         except KeyError:
-            print('Проверте токен https://oauth.vk.com/authorize?client_id=вашего приложения&display=popup&scope=stats.offline&response_type=token&v=5.131')
+            print('Проверте токен https://oauth.vk.com/authorize?client_id=вашегоприложения&display=popup&scope=stats.offline&response_type=token&v=5.131')
 
     def users_search(self, user_ids, min_age, max_age, city, offset=0):
-        if self.get_info(user_ids)[0]['sex'] == 2:
+        if self.sex_info(user_ids) == 2:
             sex = 1
         else:
             sex = 2
@@ -88,7 +88,7 @@ class VkApiClient:
         params = {
         "sort": 0,
         "offset": offset,
-        "count": 10,
+        "count": 5,
         "hometown": hometown,
         "sex": sex,
         "status": 6,
@@ -97,18 +97,21 @@ class VkApiClient:
         "has_photo": 1,
         "fields": 'city, hometown',
         }
+        all_profile = requests.get(f"{self.base_url}/method/users.search",
+                                   params={**params, **self.general_params()}).json()
+
         try:
             search_list = []
-            for profile in requests.get(f"{self.base_url}/method/users.search",
-                                params={**params, **self.general_params()}).json()['response']['items']:
+            for profile in all_profile['response']['items']:
                 if profile['is_closed'] == False and profile['can_access_closed'] == True:
-                    profile_id = profile['id']
-                    name = [profile['first_name'], profile['last_name']]
-                    photo = self.photo_search(profile_id)
-                    search_list.append([profile_id, name, photo])
+                        profile_id = profile['id']
+                        name = [profile['first_name'], profile['last_name']]
+                        photo = self.photo_search(profile_id)
+                        search_list.append([profile_id, name, photo])
             return search_list
         except KeyError:
-            print("Проверте токен https://oauth.vk.com/authorize?client_id=вашего приложения&display=popup&scope=stats.offline&response_type=token&v=5.131")
+            print('Проверте токен https://oauth.vk.com/authorize?client_id=вашегоприложения&display=popup&scope=stats.offline&response_type=token&v=5.131')
+
 
     def photo_search(self, owner_id):
         params = {
@@ -118,11 +121,12 @@ class VkApiClient:
             "extended": 'likes, comments'
         }
 
-        popular = []
-        result = []
+        photo_gallery = requests.get(f"{self.base_url}/method/photos.get",
+                                     params={**params, **self.general_params()}).json()
         try:
-            for i in requests.get(f"{self.base_url}/method/photos.get",
-                                  params={**params, **self.general_params()}).json()['response']['items']:
+            popular = []
+            result = []
+            for i in photo_gallery['response']['items']:
                 photo_id = i['id']
                 popular.append(i['comments']['count'] + i['likes']['count'])
                 likes = i['comments']['count'] + i['likes']['count']
@@ -137,7 +141,7 @@ class VkApiClient:
                         photo.append(f'photo{owner_id}_{values.get(key)}')
             return photo
         except KeyError:
-            print("Проверте токен https://oauth.vk.com/authorize?client_id=вашего приложения&display=popup&scope=stats.offline&response_type=token&v=5.131")
+            print('Проверте токен https://oauth.vk.com/authorize?client_id=вашегоприложения&display=popup&scope=stats.offline&response_type=token&v=5.131')
 
 
 
@@ -158,7 +162,7 @@ vk_client = VkApiClient(user_token=user_token, api_version="5.131")
 # pprint(vk_client.get_info(1))
 # pprint(vk_client.name_users(362420338))
 # print(vk_client.users_search(21199458,19,20,'Москва', offset=0))
-# pprint(vk_client.get_info(230574022))
+# pprint(vk_client.get_info(230574022)['response'][0]['sex'])
 # print(vk_client.get_info(23556)[0]['city']['title'])
 # print(vk_client.city_info(21199458))
 # pprint(vk_client.all_city('москва'))
