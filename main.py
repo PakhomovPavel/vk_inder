@@ -16,16 +16,15 @@ session_bd = Session()
 
 
 def listen():
-    for event in VkLongPoll(session_vk).listen():
-        if event.type == VkEventType.MESSAGE_NEW:
-            if event.to_me:
-                request = event.text.lower()
-                user_id = event.user_id
-                try:
+    try:
+        for event in VkLongPoll(session_vk).listen():
+            if event.type == VkEventType.MESSAGE_NEW:
+                if event.to_me:
+                    request = event.text.lower()
+                    user_id = event.user_id
                     return main(request, user_id)
-                except:
-                    return
-
+    except:
+        listen()
 
 def last_listen():
     for event in VkLongPoll(session_vk).listen():
@@ -35,13 +34,11 @@ def last_listen():
                 user_id = event.user_id
                 return request, user_id
 
-
-
 def send_msg(user_id, message):
     session_vk.method('messages.send', {'user_id': user_id, 'message': message, 'random_id': 0})
 
-def send_msg_photo(user_id, message, attachment = list):
-    session_vk.method('messages.send', {'user_id': user_id, 'message': message,'attachment': attachment,'random_id': 0})
+def send_msg_photo(user_id, message, attachment):
+    session_vk.method('messages.send', {'user_id': user_id, 'message': message, 'attachment': attachment, 'random_id': 0})
 
 def main(request, user_id):
     send_msg(user_id, f"Привет {vk_client.name_users(user_id)}\n"
@@ -129,27 +126,44 @@ def search_age_max(user_id, min_age, city):
 
 def search(user_id, min_age, max_age, city, offset):
     candidat = vk_client.users_search(user_id, min_age, max_age, city, offset=offset)
+    send_search(user_id, min_age, max_age, city, offset, candidat)
+
+def send_search(user_id, min_age, max_age, city, offset, candidat):
+    resl_id = []
+    use_id = []
+    for cand_res in session_bd.query(Search_result.id, Search_result.user_bot_id).all():
+        resl_id.append(cand_res[0])
+        use_id.append(cand_res[1])
 
     for element in candidat:
         candidat_id = element[0]
         candidat_name = f"{element[1][-1]} {element[1][0]}"
         candidat_photo = element[2]
-
-        resl_id = []
-        use_id = []
-        for cand_res in session_bd.query(Search_result.id, Search_result.user_bot_id).all():
-            resl_id.append(cand_res[0])
-            use_id.append(cand_res[1])
-        if (candidat_id in resl_id and user_id in use_id) != True:
-            BD_commit(user_id, candidat_id, candidat_name)
-            send_msg_photo(user_id, f"https://vk.com/id{candidat_id}\n{candidat_name}\nЧто бы перейти к следующей анкете напиши 'да'", candidat_photo)
-            for request in last_listen():
-                if request == "да":
-                    return search(user_id, min_age, max_age, city, offset)
-                else:
-                    return session_bd.close()
+        quantity_photo = len(candidat_photo)
+        if quantity_photo == 3:
+            attachment = f"{candidat_photo[0]},{candidat_photo[1]},{candidat_photo[2]}"
+        elif quantity_photo == 2:
+            attachment = f"{candidat_photo[0]},{candidat_photo[1]}"
+        elif quantity_photo == 1:
+            attachment = f"{candidat_photo[0]}"
         else:
-            search(user_id, min_age, max_age, city, offset=offset + 1)
+            attachment = "нет фото"
+
+        if (candidat_id in resl_id and user_id in use_id) == True:
+            continue
+        else:
+            BD_commit(user_id, candidat_id, candidat_name)
+            send_msg_photo(user_id, f"https://vk.com/id{candidat_id}\n{candidat_name}\nЧто бы перейти к следующей анкете напиши 'да', что бы вернуться в меню напиши 'нет", attachment)
+            for request in last_listen():
+                if request == 'да' or request == user_id:
+                    continue
+                elif request == 'нет' or request == user_id:
+                    return
+                else:
+                    send_msg(user_id, f"Попробуй еще раз! 'да, нет'")
+                    last_listen()
+
+    search(user_id, min_age, max_age, city, offset=offset+1)
 
 def BD_commit(user_id, candidat_id, candidat_name):
     bd_user = User_bot(id=user_id, name=vk_client.name_users(user_id))
@@ -165,3 +179,4 @@ def BD_commit(user_id, candidat_id, candidat_name):
         session_bd.commit()
 
 listen()
+# print(search(21199458,20,23,'Москва',0))
